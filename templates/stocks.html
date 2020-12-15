@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='stocks.css') }}">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='table.css') }}">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css">
+<link rel="icon" href="data:,">
+<title>STOCKS-MiniApplication</title>
+</head>
+
+<body>
+<div class="header">
+  <h1>STOCKS-MiniApplication</h1>
+  <a href="/" class="btn"><i class="fa fa-home"></i></a>
+</div>
+<h3 style="font-weight: bold;">Today's values:</h3>
+
+<div class="w3-container">
+  <table class="w3-table-all">
+    <thead>
+      <tr class="w3-green">
+        <th>Company</th>
+        <th>Open</th>
+        <th>Close</th>
+        <th>High</th>
+        <th>Low</th>
+        <th>Volume</th>
+      </tr>
+    </thead>
+    <tr>
+      <td>{{ company }}</td>
+      <td>{{ open }}</td>
+      <td>{{ close }}</td>
+      <td>{{ high }}</td>
+      <td>{{ low }}</td>
+      <td>{{ volume }}</td>
+    </tr>
+  </table>
+</div>
+
+<div style="text-align:center">
+  <form method="POST" action="/email">
+    <input style="width: 20%;top: 5px" type="text" class="input" placeholder="Enter email id to get the data!!!" name="email">
+    <input class="button" type="submit" value="submit">
+  </form>
+</div>
+
+<h4 style="font-weight: bold;">Predicted values:</h4>
+<img src= "{{url_for('static', filename='fig1.png')}}" alt="Chart" height="400" width="750">
+<img src= "{{url_for('static', filename='fig2.png')}}" alt="Chart" height="400" width="750">
+
+</body>
+
+<footer>
+  <div class="wrapper">
+    <ul>
+      <li><a href="mailto:thejrayasam@gmail.com" target="_blank" class="fas fa-envelope"></a></li>
+      <li><a href="https://www.facebook.com/thejprabhath.rayasam/" target="_blank" class="fab fa-facebook"></a></li>
+      <li><a href="https://www.instagram.com/thej_rayasam/" target="_blank" class="fab fa-instagram"></a></li>
+      <li><a href="https://github.com/thej-rayasam" target="_blank" class="fab fa-github"></a></li>
+    </ul>
+
+  </div>
+</footer>
+
+</html>
