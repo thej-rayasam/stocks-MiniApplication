@@ -1,0 +1,10 @@
+flask
+requests
+pandas
+bs4
+numpy
+scipy
+matplotlib
+flask_mail
+os
+gunicorn

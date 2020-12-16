@@ -32,17 +32,16 @@ def home():
     }
     count = 0
     most_active = []
-    table_header=["Symbol", "Name", "Price", "Change", "%change", "Market cap", "Avg vol (3-month)"]
+    table_header=["Name", "Price", "Change", "%change", "Market cap", "Avg vol (3-month)"]
     response = requests.get(url, headers=header)
     soup = BeautifulSoup(response.content, 'lxml')
     for item in soup.select('.simpTblRow'):
-        most_active.append(item.select('[aria-label=Symbol]')[0].get_text())
         most_active.append(item.select('[aria-label=Name]')[0].get_text())
         most_active.append(item.select('[aria-label*=Price]')[0].get_text())
         most_active.append(item.select('[aria-label=Change]')[0].get_text())
         most_active.append(item.select('[aria-label="% Change"]')[0].get_text())
         most_active.append(item.select('[aria-label="Market Cap"]')[0].get_text())
-        most_active.append(item.select('[aria-label*="Avg Vol (3 month)"]')[0].get_text())
+        most_active.append(item.select('[aria-label="Avg Vol (3 month)"]')[0].get_text())
         if count == 9:
             break
         count += 1
@@ -54,9 +53,6 @@ def stocks(company):
 
     API_KEY1 = 'VKRIY5YHD1AYDELD'
     r = requests.get('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' + company + '&apikey=' + API_KEY1)
-
-    if r.status_code == 200:
-        print(r.json())
 
     result = r.json()
     dataForAllDays = result['Time Series (Daily)']
@@ -97,7 +93,7 @@ def stocks(company):
     var = log_returns.var()
     stdev = log_returns.std()
 
-    t_intervals = 100
+    t_intervals = 252
     iterations = 100
 
     plt.figure()
@@ -140,6 +136,22 @@ def email():
             mail.send(msg)
         return render_template("email.html", email=email)
 
+@app.context_processor
+def override_url_for():
+    """
+    Generate a new token on every request to prevent the browser from caching static files.
+    """
+    return dict(url_for=dated_url_for)
+
+
+def dated_url_for(endpoint, **values):
+    if endpoint == 'static':
+        filename = values.get('filename', None)
+        if filename:
+            file_path = os.path.join(app.root_path,
+                                     endpoint, filename)
+            values['q'] = int(os.stat(file_path).st_mtime)
+    return url_for(endpoint, **values)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0',port=8080,debug=True)

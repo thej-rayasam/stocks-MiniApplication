@@ -2,18 +2,18 @@
     border-collapse: collapse;
     font-weight: bold;
     margin-right: 10px;
-    margin-left: auto;
+    margin-left: 800px;
     margin-top: 5px;
 
     font-size: 0.9em;
     font-family: sans-serif;
-    min-width: 400px;
+    width: 710px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 50);
 }
 .styled-table thead tr {
     background-color: #009879;
     color: #ffffff;
-    text-align: center;
+    text-align: left;
 }
 .styled-table th,
 .styled-table td {
