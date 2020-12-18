@@ -1,3 +1,4 @@
+#Import the required modules
 from flask import Flask, redirect, url_for, render_template, request, Response, session
 import requests
 from pandas import DataFrame
@@ -8,6 +9,7 @@ import matplotlib.pyplot as plt
 from flask_mail import Mail,  Message
 import os
 
+#Configuring flask and flask_mail
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
 app.config.update(
@@ -20,18 +22,21 @@ app.config.update(
 
 mail = Mail(app)
 
+#Home route of the application
 @app.route("/", methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
-        company = request.form['company']
+        company = request.form['company'] #gets the company symbol that user searched
         return redirect(url_for('stocks', company=company))
 
-    url = 'https://ca.finance.yahoo.com/most-active'
+    url = 'https://ca.finance.yahoo.com/most-active' #URL to get the top most-active companies
     header = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/601.3.9 (KHTML, like Gecko) Version/9.0.2 Safari/601.3.9'
     }
     count = 0
     most_active = []
+
+    #Creation of table on the home page
     table_header=["Name", "Price", "Change", "%change", "Market cap", "Avg vol (3-month)"]
     response = requests.get(url, headers=header)
     soup = BeautifulSoup(response.content, 'lxml')
@@ -45,19 +50,20 @@ def home():
         if count == 9:
             break
         count += 1
-    return render_template("index.html", table_header=table_header, most_active=most_active)
+    return render_template("index.html", table_header=table_header, most_active=most_active) #renders index.html page when accessed
 
-
+#Company route of the application
 @app.route("/<company>", methods=['GET', 'POST'])
 def stocks(company):
 
     API_KEY1 = 'VKRIY5YHD1AYDELD'
-    r = requests.get('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' + company + '&apikey=' + API_KEY1)
+    r = requests.get('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' + company + '&apikey=' + API_KEY1) #API endpoint to hit using the key
 
     result = r.json()
     dataForAllDays = result['Time Series (Daily)']
     dataForSingleDate = dataForAllDays[result['Meta Data']['3. Last Refreshed']]
 
+    #saving the data into the session
     session['company']=company
     session['open']=dataForSingleDate['1. open']
     session['high']=dataForSingleDate['2. high']
@@ -73,6 +79,7 @@ def stocks(company):
     pdopenValues = DataFrame(openValues)
     pdopenValues = pdopenValues[0]
 
+    #Plotting the graph using matplotlib
     plt.figure()
     plt.plot(openValues)
     plt.title(company)
@@ -98,6 +105,7 @@ def stocks(company):
 
     plt.figure()
 
+    #predicting the future values of the stock
     for i in range(iterations):
         drift = u - (0.5 * var)
         Z = scipy.stats.norm.ppf(np.random.rand(t_intervals))
@@ -116,8 +124,9 @@ def stocks(company):
         plt.ylabel("Projected Prices")
         plt.savefig('static/fig3.png')
 
-    return render_template("stocks.html", company=company, open=dataForSingleDate['1. open'], high=dataForSingleDate['2. high'], low=dataForSingleDate['3. low'], close=dataForSingleDate['4. close'], volume=dataForSingleDate['5. volume'])
+    return render_template("stocks.html", company=company, open=dataForSingleDate['1. open'], high=dataForSingleDate['2. high'], low=dataForSingleDate['3. low'], close=dataForSingleDate['4. close'], volume=dataForSingleDate['5. volume']) #renders stocks.html when accessed
 
+#Email route of the application helps in configuring and sending the email to user
 @app.route("/email", methods=['GET', 'POST'])
 def email():
     if request.method == 'POST':
@@ -127,6 +136,7 @@ def email():
                           sender=app.config.get("MAIL_USERNAME"),
                           recipients=[email],
                           body=("Hello\n\nThe details you have requested regarding "+session.get('company')+" is given below: \n\nCompany - "+session.get('company')+"\n"+"Open - "+session.get('open')+"\n"+"Close - "+session.get('close')+"\n"+"High - "+session.get('high')+"\n"+"Low - "+session.get('low')+"\n"+"Volume - "+session.get('volume')+"\n\nThank you for using Stocks-MiniApplication, Please visit again!!!\n\nHappy Trading!!!\n\nRegards,\nTeam Stocks-MiniApplication"))
+            #Attaching the plots as images to the email
             with app.open_resource("static/fig1.png") as fp:
                 msg.attach("fig1.png", "fig1/png", fp.read())
             with app.open_resource("static/fig2.png") as fp:
@@ -134,8 +144,9 @@ def email():
             with app.open_resource("static/fig3.png") as fp:
                 msg.attach("fig3.png", "fig3/png", fp.read())
             mail.send(msg)
-        return render_template("email.html", email=email)
+        return render_template("email.html", email=email) #renders email.html when accessed
 
+#Following code helps in refreshing the CSS styles every time the page is refreshed
 @app.context_processor
 def override_url_for():
     """
@@ -153,5 +164,6 @@ def dated_url_for(endpoint, **values):
             values['q'] = int(os.stat(file_path).st_mtime)
     return url_for(endpoint, **values)
 
+#Starting the flask application
 if __name__ == "__main__":
     app.run(host='0.0.0.0',port=8080,debug=True)
